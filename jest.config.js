@@ -5,9 +5,6 @@ module.exports = {
   coverageReporters: ["lcov", "json-summary", "text-summary"],
   verbose: true,
   transform: {
-    "^.+\\.ts?$": [
-      "@swc/jest",
-      { }
-    ],
+    "^.+\\.ts?$": "@swc/jest",
   }
 };
