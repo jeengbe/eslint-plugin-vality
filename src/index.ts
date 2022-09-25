@@ -1,5 +1,5 @@
 import { rules } from "./rules";
 
-export default {
+module.exports = {
   rules
-}
+};
