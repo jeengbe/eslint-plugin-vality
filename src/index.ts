@@ -1,5 +1,5 @@
 import { rules } from "./rules";
 
-export const configuration = {
+export default {
   rules
 }
