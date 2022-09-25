@@ -1,12 +1,12 @@
 {
-  "name": "vality-eslint",
+  "name": "eslint-plugin-vality",
   "description": "ESLint plugin for Vality.",
   "version": "1.0.1",
   "author": "Jesper Engberg <jeengbe@gmail.com>",
   "homepage": "https://ts-vality.io",
   "repository": {
     "type": "git",
-    "url": "git://github.com/jeengbe/vality-eslint.git"
+    "url": "git://github.com/jeengbe/eslint-plugin-vality.git"
   },
   "keywords": [
     "eslint",
@@ -15,7 +15,7 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jeengbe/vality-eslint/issues"
+    "url": "https://github.com/jeengbe/eslint-plugin-vality/issues"
   },
   "devDependencies": {
     "@jest/types": "29.0.3",

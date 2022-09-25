@@ -6,7 +6,7 @@ on:
       - master
 
 concurrency:
-  group: publish-vality-eslint
+  group: publish-eslint-plugin-vality
   cancel-in-progress: true
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - name: Check version changes
         uses: EndBug/version-check@v1
         with:
-          file-url: https://unpkg.com/vality-eslint@latest/package.json
+          file-url: https://unpkg.com/eslint-plugin-vality@latest/package.json
           static-checking: localIsNew
         id: check
       - name: Set status to skip
@@ -43,7 +43,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: vality-eslint
+          name: eslint-plugin-vality
           path: |
             ./dist/
             ./package.json
@@ -58,7 +58,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
-          name: vality-eslint
+          name: eslint-plugin-vality
       - name: Install Node
         uses: actions/setup-node@v3
         with:
