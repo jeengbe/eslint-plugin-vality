@@ -4,6 +4,8 @@
     "lib": [
       "ESNext"
     ],
-    "types": []
+    "target": "ESNext",
+    "module": "CommonJS",
+    "noErrorTruncation": true
   }
 }
