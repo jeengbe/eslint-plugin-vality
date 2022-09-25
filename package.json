@@ -1,7 +1,7 @@
 {
   "name": "vality-eslint",
-  "description": "ESLint plugin for Vality",
-  "version": "1.0.0",
+  "description": "ESLint plugin for Vality.",
+  "version": "1.0.1",
   "author": "Jesper Engberg <jeengbe@gmail.com>",
   "homepage": "https://ts-vality.io",
   "repository": {
@@ -23,6 +23,7 @@
     "@swc/jest": "0.2.22",
     "@types/eslint": "8.4.6",
     "@types/jest": "29.0.3",
+    "@types/node": "18.7.21",
     "@typescript-eslint/parser": "5.38.0",
     "@typescript-eslint/utils": "5.38.0",
     "eslint": "8.23.1",
@@ -31,10 +32,10 @@
   },
   "main": "./dist/index.js",
   "scripts": {
-		"build": "tsc -p src/tsconfig.json",
-		"test": "jest tests --coverage --ci --verbose=false",
-		"lint": "echo \"Error: no linting configured\"",
-		"test-watch": "jest --watchAll --coverage tests"
+    "build": "tsc -p src/tsconfig.json",
+    "test": "jest tests --coverage --ci --verbose=false",
+    "lint": "echo \"Error: no linting configured\"",
+    "test-watch": "jest --watchAll --coverage tests"
   },
   "peerDependencies": {
     "@typescript-eslint/parser": "5.38.0",
