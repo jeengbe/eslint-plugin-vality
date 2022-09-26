@@ -1,3 +1,4 @@
+import { InvalidTestCase } from "@typescript-eslint/utils/dist/ts-eslint";
 import rule from "../../src/rules/as-const";
 import { ruleTester } from "./tester";
 import { permute } from "./utils";
@@ -48,28 +49,43 @@ ruleTester.run("as-const", rule, {
   ].map(mapInvalidEntry).flat(),
 });
 
+
+
+function mapInvalidEntry(
+  entry:
+    | string
+    | { code: string; output: string; }
+): InvalidTestCase<"asConst", []>;
+function mapInvalidEntry(
+  entry:
+    | { code: string[]; output: string[] }
+): InvalidTestCase<"asConst", []>[]
 function mapInvalidEntry(
   entry:
     | string
     | { code: string[]; output: string[] }
     | { code: string; output: string }
-) {
+): InvalidTestCase<"asConst", []> | InvalidTestCase<"asConst", []>[]{
   if (typeof entry === "string") {
     return {
       code: entry,
       output: entry + " as const",
+      errors: [{ messageId: "asConst" }],
+    };
+  }
+  const { code, output } = entry;
+
+  if (typeof code === "string") {
+    return {
+      code: code as string,
+      output: output as string,
       errors: [{ messageId: "asConst" as const }],
     };
   }
-  if (typeof entry.code !== "string") {
-    return entry.code.map((code, i) =>
-      mapInvalidEntry({ code, output: entry.output[i] })
-    );
-  }
-  return {
-    ...entry,
-    errors: [{ messageId: "asConst" as const }],
-  };
+
+  return code.map((code, i) =>
+    mapInvalidEntry({ code, output: entry.output[i] })
+  );
 }
 
 // ruleTester.run("as-const", rule, {

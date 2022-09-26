@@ -1,9 +1,9 @@
 {
   "name": "eslint-plugin-vality",
   "description": "ESLint plugin for Vality.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Jesper Engberg <jeengbe@gmail.com>",
-  "homepage": "https://ts-vality.io",
+  "homepage": "https://ts-vality.io/eslint",
   "repository": {
     "type": "git",
     "url": "git://github.com/jeengbe/eslint-plugin-vality.git"
@@ -35,7 +35,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -p src/tsconfig.json",
-    "test": "jest tests --coverage --ci --verbose=false",
+    "test": "jest tests --coverage --ci",
     "lint": "echo \"Error: no linting configured\"",
     "test-watch": "jest --watchAll --coverage tests"
   },
