@@ -1,3 +1,4 @@
+import { TSESTree } from "@typescript-eslint/utils";
 import {
   arrayRequiresAsConst,
   isWithinAsConstContext,
@@ -7,39 +8,52 @@ import {
 } from "./nodeutils";
 import { createRule } from "./utils";
 
+function createNodesCache() {
+  return new WeakMap<TSESTree.Node, boolean>();
+}
+
 export default createRule<[], "asConst">({
-  create: (ctx) => ({
-    ObjectExpression(node) {
-      if (
-        !isWithinAsConstContext(node) &&
-        !isWithinRequiresAsConstContext(node) &&
-        objectRequiresAsConst(node)
-      ) {
-        ctx.report({
-          node,
-          messageId: "asConst",
-          fix(fixer) {
-            return fixer.insertTextAfter(node, " as const");
-          },
-        });
-      }
-    },
-    ArrayExpression(node) {
-      if (
-        !isWithinAsConstContext(node) &&
-        !isWithinRequiresAsConstContext(node) &&
-        (arrayRequiresAsConst(node) || parentIsTrigger(node))
-      ) {
-        ctx.report({
-          node,
-          messageId: "asConst",
-          fix(fixer) {
-            return fixer.insertTextAfter(node, " as const");
-          },
-        });
-      }
-    },
-  }),
+  create: (ctx) => {
+    const nodeCaches = {
+      isWithinAsConstContext: createNodesCache(),
+      isWithinRequiresAsConstContext: createNodesCache(),
+      objectRequiresAsConst: createNodesCache(),
+      arrayRequiresAsConst: createNodesCache(),
+    };
+
+    return {
+      ObjectExpression(node) {
+        if (
+          !isWithinAsConstContext(node, nodeCaches) &&
+          !isWithinRequiresAsConstContext(node, nodeCaches) &&
+          objectRequiresAsConst(node, nodeCaches)
+        ) {
+          ctx.report({
+            node,
+            messageId: "asConst",
+            fix(fixer) {
+              return fixer.insertTextAfter(node, " as const");
+            },
+          });
+        }
+      },
+      ArrayExpression(node) {
+        if (
+          !isWithinAsConstContext(node, nodeCaches) &&
+          !isWithinRequiresAsConstContext(node, nodeCaches) &&
+          (arrayRequiresAsConst(node, nodeCaches) || parentIsTrigger(node))
+        ) {
+          ctx.report({
+            node,
+            messageId: "asConst",
+            fix(fixer) {
+              return fixer.insertTextAfter(node, " as const");
+            },
+          });
+        }
+      },
+    };
+  },
   name: "as-const",
   meta: {
     type: "problem",

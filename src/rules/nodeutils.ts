@@ -2,10 +2,25 @@ import { TSESTree } from "@typescript-eslint/utils";
 
 const NODES = TSESTree.AST_NODE_TYPES;
 
+type NodeCaches = Record<
+  | "isWithinAsConstContext"
+  | "isWithinRequiresAsConstContext"
+  | "objectRequiresAsConst"
+  | "arrayRequiresAsConst",
+  WeakMap<TSESTree.Node, boolean>
+>;
+
 /**
  * Whether the node is within an 'as const' context
  */
-export function isWithinAsConstContext(node: TSESTree.Node): boolean {
+export function isWithinAsConstContext(
+  node: TSESTree.Node,
+  nodeCaches: NodeCaches
+): boolean {
+  if (nodeCaches.isWithinAsConstContext.has(node))
+    return nodeCaches.isWithinAsConstContext.get(node)!;
+
+  const origNode = node;
   do {
     if (
       node.type === NODES.TSAsExpression &&
@@ -13,6 +28,7 @@ export function isWithinAsConstContext(node: TSESTree.Node): boolean {
       node.typeAnnotation.typeName.type === NODES.Identifier &&
       node.typeAnnotation.typeName.name === "const"
     ) {
+      nodeCaches.isWithinAsConstContext.set(origNode, true);
       return true;
     }
 
@@ -22,35 +38,55 @@ export function isWithinAsConstContext(node: TSESTree.Node): boolean {
       node.type !== NODES.ObjectExpression &&
       node.type !== NODES.ArrayExpression
     ) {
+      nodeCaches.isWithinAsConstContext.set(origNode, false);
       return false;
     }
 
-    if (!node.parent) return false;
-  } while (node = node.parent);
+    if (!node.parent) {
+      nodeCaches.isWithinAsConstContext.set(origNode, false);
+      return false;
+    };
+  } while ((node = node.parent));
+
+  nodeCaches.isWithinAsConstContext.set(origNode, false);
   return false;
 }
 
 /**
  * Whether one of the node's 'as const' parents requires 'as const'
  */
-export function isWithinRequiresAsConstContext(node: TSESTree.Node): boolean {
+export function isWithinRequiresAsConstContext(
+  node: TSESTree.Node,
+  nodeCaches: NodeCaches
+): boolean {
   if (!node.parent) return false;
+  if (nodeCaches.isWithinRequiresAsConstContext.has(node))
+    return nodeCaches.isWithinRequiresAsConstContext.get(node)!;
 
-  while(node = node.parent) {
+  const origNode = node;
+  while ((node = node.parent)) {
     // Only traverse objects and arrays upwards
     if (
       node.type !== NODES.Property &&
       node.type !== NODES.ObjectExpression &&
       node.type !== NODES.ArrayExpression
     ) {
+      nodeCaches.isWithinRequiresAsConstContext.set(origNode, false);
       return false;
     }
 
-    if (requiresAsConst(node)) return true;
+    if (requiresAsConst(node, nodeCaches, undefined)) {
+      nodeCaches.isWithinRequiresAsConstContext.set(origNode, true);
+      return true;
+    }
 
-    if (!node.parent) return false;
-  };
+    if (!node.parent) {
+      nodeCaches.isWithinRequiresAsConstContext.set(origNode, false);
+      return false;
+    }
+  }
 
+  nodeCaches.isWithinRequiresAsConstContext.set(origNode, false);
   return false;
 }
 
@@ -69,16 +105,17 @@ export function isVality(node: TSESTree.Node): boolean {
  */
 export function requiresAsConst(
   node: TSESTree.Node,
-  parentHasTrigger = false
+  nodeCaches: NodeCaches,
+  parentHasTrigger = false,
 ): boolean {
   switch (node.type) {
     case NODES.ObjectExpression:
-      return objectRequiresAsConst(node, parentHasTrigger);
+      return objectRequiresAsConst(node, nodeCaches, parentHasTrigger);
     case NODES.ArrayExpression:
     case NODES.Literal:
       return parentHasTrigger;
     case NODES.Property:
-      return requiresAsConst(node.value, parentHasTrigger);
+      return requiresAsConst(node.value, nodeCaches, parentHasTrigger);
     default:
       return false;
   }
@@ -86,8 +123,12 @@ export function requiresAsConst(
 
 export function objectRequiresAsConst(
   node: TSESTree.ObjectExpression,
-  parentHasTrigger = false
+  nodeCaches: NodeCaches,
+  parentHasTrigger = false,
 ): boolean {
+  if (nodeCaches.objectRequiresAsConst.has(node))
+    return nodeCaches.objectRequiresAsConst.get(node)!;
+
   let hasTrigger = parentHasTrigger;
 
   if (!hasTrigger) {
@@ -100,29 +141,44 @@ export function objectRequiresAsConst(
         break;
       }
     }
-    if (!hasTrigger) return false;
+    if (!hasTrigger) {
+      nodeCaches.objectRequiresAsConst.set(node, false);
+      return false;
+    };
   }
 
   for (const prop of node.properties) {
     /* istanbul ignore next */
     if (prop.type === NODES.SpreadElement) continue;
 
-    if (requiresAsConst(prop, true)) return true;
+    if (requiresAsConst(prop, nodeCaches, true)) {
+      nodeCaches.objectRequiresAsConst.set(node, true);
+      return true;
+    };
   }
+
+  nodeCaches.objectRequiresAsConst.set(node, false);
   return false;
 }
 
 export function arrayRequiresAsConst(
   node: TSESTree.ArrayExpression,
+  nodeCaches: NodeCaches
 ): boolean {
-    for (const prop of node.elements) {
-      /* istanbul ignore next */
-      if (prop.type === NODES.SpreadElement) continue;
+  if (nodeCaches.arrayRequiresAsConst.has(node))
+    return nodeCaches.arrayRequiresAsConst.get(node)!;
 
-      if (isTrigger(prop)) {
-        return true;
-      }
+  for (const prop of node.elements) {
+    /* istanbul ignore next */
+    if (prop.type === NODES.SpreadElement) continue;
+
+    if (isTrigger(prop)) {
+      nodeCaches.arrayRequiresAsConst.set(node, true);
+      return true;
     }
+  }
+
+  nodeCaches.arrayRequiresAsConst.set(node, false);
   return false;
 }
 
