@@ -3,7 +3,7 @@
 /** @type {import('@jest/types').Config.InitialOptions} */
 module.exports = {
   coverageReporters: ["lcov", "json-summary", "text-summary"],
-  verbose: false,
+  verbose: true,
   transform: {
     "^.+\\.ts?$": "@swc/jest",
   }

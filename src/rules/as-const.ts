@@ -18,7 +18,7 @@ export default createRule<[], "asConst">({
       isWithinAsConstContext: createNodesCache(),
       isWithinRequiresAsConstContext: createNodesCache(),
       objectRequiresAsConst: createNodesCache(),
-      arrayRequiresAsConst: createNodesCache(),
+      arrayRequiresAsConst: createNodesCache()
     };
 
     return {

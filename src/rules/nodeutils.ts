@@ -17,6 +17,7 @@ export function isWithinAsConstContext(
   node: TSESTree.Node,
   nodeCaches: NodeCaches
 ): boolean {
+  /* istanbul ignore next */
   if (nodeCaches.isWithinAsConstContext.has(node))
     return nodeCaches.isWithinAsConstContext.get(node)!;
 
@@ -42,29 +43,26 @@ export function isWithinAsConstContext(
       return false;
     }
 
-    if (!node.parent) {
-      nodeCaches.isWithinAsConstContext.set(origNode, false);
-      return false;
-    };
-  } while ((node = node.parent));
+  } while (node = node.parent!);
 
-  nodeCaches.isWithinAsConstContext.set(origNode, false);
+  // We always have a non-object/property/array at the root
+  /* istanbul ignore next */
   return false;
 }
 
 /**
- * Whether one of the node's 'as const' parents requires 'as const'
+ * Whether one of the node's parents requires 'as const'
  */
 export function isWithinRequiresAsConstContext(
   node: TSESTree.Node,
   nodeCaches: NodeCaches
 ): boolean {
-  if (!node.parent) return false;
+  /* istanbul ignore next */
   if (nodeCaches.isWithinRequiresAsConstContext.has(node))
     return nodeCaches.isWithinRequiresAsConstContext.get(node)!;
 
   const origNode = node;
-  while ((node = node.parent)) {
+  while (node = node.parent!) {
     // Only traverse objects and arrays upwards
     if (
       node.type !== NODES.Property &&
@@ -80,13 +78,9 @@ export function isWithinRequiresAsConstContext(
       return true;
     }
 
-    if (!node.parent) {
-      nodeCaches.isWithinRequiresAsConstContext.set(origNode, false);
-      return false;
-    }
   }
 
-  nodeCaches.isWithinRequiresAsConstContext.set(origNode, false);
+  /* istanbul ignore next */
   return false;
 }
 
@@ -112,6 +106,7 @@ export function requiresAsConst(
     case NODES.ObjectExpression:
       return objectRequiresAsConst(node, nodeCaches, parentHasTrigger);
     case NODES.ArrayExpression:
+      return parentHasTrigger || arrayRequiresAsConst(node, nodeCaches);
     case NODES.Literal:
       return parentHasTrigger;
     case NODES.Property:
@@ -126,6 +121,7 @@ export function objectRequiresAsConst(
   nodeCaches: NodeCaches,
   parentHasTrigger = false,
 ): boolean {
+  /* istanbul ignore next */
   if (nodeCaches.objectRequiresAsConst.has(node))
     return nodeCaches.objectRequiresAsConst.get(node)!;
 
@@ -163,8 +159,9 @@ export function objectRequiresAsConst(
 
 export function arrayRequiresAsConst(
   node: TSESTree.ArrayExpression,
-  nodeCaches: NodeCaches
+  nodeCaches: NodeCaches,
 ): boolean {
+  /* istanbul ignore next */
   if (nodeCaches.arrayRequiresAsConst.has(node))
     return nodeCaches.arrayRequiresAsConst.get(node)!;
 
@@ -173,18 +170,16 @@ export function arrayRequiresAsConst(
     if (prop.type === NODES.SpreadElement) continue;
 
     if (isTrigger(prop)) {
-      nodeCaches.arrayRequiresAsConst.set(node, true);
       return true;
     }
   }
 
-  nodeCaches.arrayRequiresAsConst.set(node, false);
   return false;
 }
 
 export function parentIsTrigger(node: TSESTree.Node): boolean {
-  if (!node.parent) return false;
-  return isTrigger(node.parent);
+  // We'll make sure to only call this with nodes with a parent (i.e. never with the root node)
+  return isTrigger(node.parent!);
 }
 
 /**
